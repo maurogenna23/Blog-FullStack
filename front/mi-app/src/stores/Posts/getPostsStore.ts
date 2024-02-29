@@ -21,6 +21,7 @@ interface Post {
     author: Author;
     comments: Comment[];
     createdAt: string;
+    imageUrl?: string;
 }
 
 interface PostState {

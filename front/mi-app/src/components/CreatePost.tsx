@@ -1,22 +1,29 @@
 import { useState } from "react"
-import { useCreatePost } from "../stores/Posts/createPostStore";
+import { useCreatePostStore } from "../stores/Posts/createPostStore";
 
 const Create = () => {
 
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
-    const create = useCreatePost((state) => state.post)
+    const [image, setImage] = useState<File | null>(null);
+    const create = useCreatePostStore((state) => state.post)
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); // Asegúrate de llamar a preventDefault para evitar la recarga de la página
         try {
-            const data = await create(title, body);
+            const data = await create(title, body, image);
             console.log('Post creado exitosamente', data);
-            // Considera resetear el formulario aquí o redirigir al usuario
         } catch (error) {
             console.error('Error al crear el post:', error);
         }
     }
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setImage(e.target.files[0]);
+        } else {
+            setImage(null);
+        }
+    };
 
     return (
         <div className="flex justify-center mt-20">
@@ -41,6 +48,18 @@ const Create = () => {
                         placeholder="Contenido"
                         rows={6}
                         className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                </div>
+                <div>
+                    <input
+                        type="file"
+                        onChange={handleImageChange}
+                        className="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-green-50 file:text-green-700
+                        hover:file:bg-green-100"
                     />
                 </div>
                 <div className="text-center">

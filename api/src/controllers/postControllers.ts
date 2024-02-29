@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import Post from "../models/Post";
 import { AuthenticatedRequest } from "../../types";
+import uploadFile from '../utils/uploadFile';
+import deleteFile from "../utils/deleteFile";
 
 export const getAllPost = async (req: Request, res: Response) => {
     try {
@@ -36,28 +38,45 @@ export const getPostId = async (req: Request, res: Response) => {
 }
 
 export const updatePost = async (req: AuthenticatedRequest, res: Response) => {
-
     if (!req.user) {
         return res.status(403).json({ message: "No se pudo autenticar al usuario." });
     }
 
     const { id } = req.params;
-    const { title, body } = req.body;
     const author = req.user.id;
+    const { title, content } = req.body;
+    const file = req.file;
 
     try {
-        const updatedPost = await Post.findByIdAndUpdate(id, { title, body, author }, { new: true });
+        const post = await Post.findById(id);
 
-        if (!updatedPost) {
-            return res.status(404).json({ message: "No se encontró el post con el ID proporcionado." });
+        if (!post) {
+            return res.status(404).json({ message: 'Post no encontrado' });
         }
 
-        res.json(updatedPost);
+        if (post.author.toString() !== author) {
+            return res.status(403).json({ message: 'No autorizado para actualizar este post' });
+        }
+
+        if (file && post.imageUrl) {
+            await deleteFile(post.imageUrl);
+        }
+
+        if (file) {
+            const uploadResult = await uploadFile(file.buffer, file.originalname);
+            post.imageUrl = uploadResult.Key;
+        }
+
+        post.title = title || post.title;
+        post.body = content || post.body;
+        await post.save();
+
+        res.json({ message: 'Post actualizado correctamente', post });
     } catch (error) {
-        const message = (error as any).message || 'Ocurrió un error';
-        res.status(500).json({ message });
+        console.error('Error al actualizar post:', error);
+        res.status(500).json({ message: 'Error al actualizar el post' });
     }
-}
+};
 
 export const createPost = async (req: AuthenticatedRequest, res: Response) => {
     if (!req.user) {
@@ -67,32 +86,45 @@ export const createPost = async (req: AuthenticatedRequest, res: Response) => {
     const { title, body } = req.body;
     const author = req.user.id;
 
+    let imageUrl = '';
+
+    if (req.file) {
+
+        try {
+            const fileContent = req.file.buffer;
+            const fileName = `posts/${Date.now()}_${req.file.originalname}`;
+            const uploadResponse = await uploadFile(fileContent, fileName);
+            imageUrl = uploadResponse.Location;
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Error al subir la imagen." });
+        }
+    }
+
     const post = new Post({
         title,
         body,
-        author
+        author,
+        imageUrl
     });
 
     try {
         const newPost = await post.save();
-        const populatedPost = await Post.findById(newPost._id).populate('author', 'name');
-
-        res.status(201).json(populatedPost);
+        res.status(201).json(newPost);
     } catch (error) {
-        const message = (error as any).message || 'Ocurrió un error';
-        res.status(500).json({ message });
+        res.status(500).json({ message: "Error al crear el post." });
     }
 };
 
 
 export const deletePost = async (req: AuthenticatedRequest, res: Response) => {
-
     if (!req.user) {
         return res.status(403).json({ message: "No se pudo autenticar al usuario." });
     }
 
     const { id } = req.params;
     const author = req.user.id;
+
     try {
         const post = await Post.findById(id);
 
@@ -104,10 +136,16 @@ export const deletePost = async (req: AuthenticatedRequest, res: Response) => {
             return res.status(403).json({ message: 'No autorizado para eliminar este post' });
         }
 
+        if (post.imageUrl) {
+            await deleteFile(post.imageUrl);
+        }
+
         await Post.findByIdAndDelete(id);
-        res.json({ message: 'Post eliminado' });
+        res.json({ message: 'Post eliminado correctamente' });
     } catch (error) {
+        console.error('Error al eliminar post:', error);
         const message = (error as any).message || 'Ocurrió un error';
         res.status(500).json({ message });
     }
 };
+

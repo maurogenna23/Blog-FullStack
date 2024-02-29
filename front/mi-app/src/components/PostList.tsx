@@ -52,7 +52,10 @@ const Posts = () => {
                     {posts.map((post) => (
                         <div key={post._id} className="w-[560px] p-5 h-auto my-4 transition-shadow duration-300 hover:shadow-lg rounded-lg">
                             <div className="flex flex-col h-full">
-                                <img src={imagen} alt="post" style={{ width: '100%', objectFit: 'cover' }} />
+                                <div className="flex justify-center items-center, h-[300px]">
+                                    <img src={post.imageUrl} alt="post" style={{ maxWidth: '100%', height: 'auto', objectFit: 'cover' }} />
+                                </div>
+
                                 <h3 className="text-4xl mt-4 font-semibold mb-2 pl-2">{post.title}</h3>
                                 <p className="font-semibold text-[20px] pl-2">{post.author?.name}</p>
                                 <p className="text-gray-700 mb-4 pl-2">{post.body}</p>
