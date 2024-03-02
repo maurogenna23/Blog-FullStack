@@ -6,6 +6,7 @@ interface User {
     _id: string;
     name: string;
     email: string;
+    imageUser: string;
 }
 
 interface AuthStateLogin {
@@ -85,25 +86,28 @@ export const useAuthStore = create(persist<AuthStateLogin>(
 interface AuthStateRegister {
     token: string | null;
     successMessage: string;
-    errorMessage: string; // Nuevo estado para manejar mensajes de error
-    register: (email: string, password: string, name: string) => Promise<void>;
+    errorMessage: string;
+    register: (email: string, password: string, name: string, image: File | null) => Promise<void>;
     logout: () => void;
     setSuccessMessage: (message: string) => void;
-    setErrorMessage: (message: string) => void; // Nuevo método para actualizar el mensaje de error
+    setErrorMessage: (message: string) => void;
 }
 
 export const AuthStoreRegister = create<AuthStateRegister>((set) => ({
     token: null,
     successMessage: '',
-    errorMessage: '', // Inicialización del nuevo estado
-    register: async (email, password, name) => {
+    errorMessage: '',
+    register: async (email, password, name, image) => {
         try {
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('name', name);
+            if (image) formData.append('image', image);
+
             const response = await fetch('http://localhost:5000/api/auth/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password, name }),
+                body: formData,
             });
 
             if (!response.ok) {
@@ -120,7 +124,6 @@ export const AuthStoreRegister = create<AuthStateRegister>((set) => ({
             }
             set({ errorMessage });
         }
-
     },
     logout: () => set({ token: null, successMessage: '', errorMessage: '' }),
     setSuccessMessage: (message) => set({ successMessage: message }),

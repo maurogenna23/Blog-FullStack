@@ -5,6 +5,7 @@ interface IUser extends Document {
     email: string;
     password: string;
     name: string;
+    imageUser: string;
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -12,6 +13,7 @@ const UserSchema: Schema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     name: { type: String, required: true },
+    imageUser: { type: String, required: false }
 })
 
 UserSchema.pre<IUser>('save', async function (next) {

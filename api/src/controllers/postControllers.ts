@@ -6,7 +6,7 @@ import deleteFile from "../utils/deleteFile";
 
 export const getAllPost = async (req: Request, res: Response) => {
     try {
-        const posts = await Post.find().populate('author', 'name email');
+        const posts = await Post.find().populate('author', 'name email imageUser');
         res.json(posts);
     } catch (error) {
         const message = (error as any).message || 'Ocurrió un error';
@@ -18,12 +18,12 @@ export const getAllPost = async (req: Request, res: Response) => {
 export const getPostId = async (req: Request, res: Response) => {
     try {
         const post = await Post.findById(req.params.id)
-            .populate('author', 'name')
+            .populate('author', 'name imageUser')
             .populate({
                 path: 'comments',
                 populate: {
                     path: 'author',
-                    select: 'name'
+                    select: 'name imageUser',
                 }
             });
         if (post) {

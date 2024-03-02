@@ -9,13 +9,22 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [image, setImage] = useState<File | null>(null);
     const register = AuthStoreRegister((state) => state.register);
     const successMessage = AuthStoreRegister((state) => state.successMessage)
     const errorMessage = AuthStoreRegister((state) => state.errorMessage);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        await register(email, password, name);
+        await register(email, password, name, image);
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setImage(e.target.files[0]);
+        } else {
+            setImage(null);
+        }
     };
 
     return (
@@ -23,35 +32,51 @@ const Register = () => {
             <form onSubmit={handleSubmit} className="space-y-4 flex flex-col justify-center mt-20 w-full items-center">
                 <h1 className="text-8xl font-semibold">Registro</h1>
                 <p className="font-light">Forma parte de nosotros</p>
-                <div className="flex items-center gap-4 bg-white shadow-md rounded-lg overflow-hidden pt-5">
-                    <img src={user} alt="User" className="w-full h-full object-cover  ml-3" />
-                    <input
-                        type="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Name"
-                        className="flex-1 py-2 px-4 outline-none "
-                    />
-                </div>
-                <div className="flex items-center gap-4 bg-white shadow-md rounded-lg overflow-hidden">
-                    <img src={user} alt="User" className="w-full h-full object-cover  ml-3" />
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        className="flex-1 py-2 px-4 outline-none "
-                    />
-                </div>
-                <div className="flex items-center gap-4 bg-white shadow-md rounded-lg overflow-hidden">
-                    <img src={passwordImg} alt={passwordImg} className="w-full h-full object-cover ml-3" />
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password"
-                        className="flex-1 py-2 px-4 outline-none "
-                    />
+                <div className="flex items-center w-full justify-center">
+                    <div>
+                        <div className="flex items-center gap-4 bg-white shadow-md rounded-lg overflow-hidden pt-5">
+                            <img src={user} alt="User" className="w-full h-full object-cover  ml-3" />
+                            <input
+                                type="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Name"
+                                className="flex-1 py-2 px-4 outline-none "
+                            />
+                        </div>
+                        <div className="flex items-center gap-4 bg-white shadow-md rounded-lg overflow-hidden">
+                            <img src={user} alt="User" className="w-full h-full object-cover  ml-3" />
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email"
+                                className="flex-1 py-2 px-4 outline-none "
+                            />
+                        </div>
+                        <div className="flex items-center gap-4 bg-white shadow-md rounded-lg overflow-hidden">
+                            <img src={passwordImg} alt={passwordImg} className="w-full h-full object-cover ml-3" />
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Password"
+                                className="flex-1 py-2 px-4 outline-none "
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <input
+                            type="file"
+                            onChange={handleImageChange}
+                            className="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-green-50 file:text-green-700
+                        hover:file:bg-green-100"
+                        />
+                    </div>
                 </div>
                 <button type="submit" className="bg-black text-white p-2 rounded-lg w-1/2 mt-10">Register</button>
                 {errorMessage && <p className="text-red-500">{errorMessage}</p>}

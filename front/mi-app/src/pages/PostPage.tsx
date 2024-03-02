@@ -5,7 +5,7 @@ const PostPage = () => {
     return (
         <div>
             <Create />
-            <div className="mt-20">
+            <div className=" ">
                 <Posts />
             </div>
         </div>

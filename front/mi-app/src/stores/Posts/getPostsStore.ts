@@ -4,6 +4,7 @@ import { useAuthStore } from "../useAuthStore";
 interface Author {
     _id: string;
     name: string;
+    imageUser: string;
 }
 
 interface Comment {
